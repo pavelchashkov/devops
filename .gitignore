@@ -1,2 +1,4 @@
 .vscode
 .idea
+/05-virt-04-docker-compose/terraform/.terraform
+/05-virt-04-docker-compose/terraform/.terraform.lock.hcl
