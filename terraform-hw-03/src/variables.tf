@@ -30,3 +30,48 @@ variable "vpc_name" {
   default     = "develop"
   description = "VPC network&subnet name"
 }
+
+variable "base_compute_image" {
+  type = string
+  default = "ubuntu-2004-lts"
+  description = "Base compute image"
+}
+
+variable "vm_web_user" {
+  type = string
+  default = "ubuntu"
+}
+
+variable "ssh_pub_key_file" {
+  type = string
+  default = "~/.ssh/id_rsa.pub"
+}
+
+variable "cluster_vms" {
+  type = list(object({
+    id = number
+    name = string
+    cpu = number
+    core_fraction = number
+    ram = number
+    disk = number
+  }))
+  default = [
+    {
+      id = 1,
+      name = "main",
+      cpu = 4,
+      core_fraction = 20,
+      ram = 8,
+      disk = 10,
+    },
+    {
+      id = 2,
+      name = "replica",
+      cpu = 2,
+      core_fraction = 5,
+      ram = 4,
+      disk = 5
+    }
+  ]
+}

@@ -49,6 +49,163 @@
 4. Используйте функцию file в local переменной для считывания ключа ~/.ssh/id_rsa.pub и его последующего использования в блоке metadata, взятому из ДЗ №2.
 5. Инициализируйте проект, выполните код.
 
+### Решение
+
+```terraform
+resource "yandex_compute_instance" "web" {
+  count = 2
+  name = "web-${count.index+1}"
+  platform_id = "standard-v1"
+
+  resources {
+    cores  = 2
+    memory = 1
+    core_fraction = 20
+  }
+
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.base_ubuntu.image_id
+      type = "network-hdd"
+      size = 5
+    }
+  }
+
+  metadata = {
+    ssh-keys = "ubuntu:${file(var.ssh_pub_key_file)}"
+  }
+
+  scheduling_policy { preemptible = true }
+
+  network_interface {
+    subnet_id = yandex_vpc_subnet.develop.id
+    nat       = true
+    security_group_ids = [yandex_vpc_security_group.example.id]
+  }
+  allow_stopping_for_update = true
+}
+```
+
+```terraform
+variable "ssh_pub_key_file" {
+  type = string
+  default = "~/.ssh/id_rsa.pub"
+}
+```
+
+<img src="./img/4.png">
+<img src="./img/5.png">
+<img src="./img/6.png">
+<img src="./img/7.png">
+
+```terraform
+locals {
+  vms = [
+    {
+      id = 1,
+      name = "main",
+      cpu = 4,
+      core_fraction = 20,
+      ram = 8,
+      disk = 10,
+    },
+    {
+      id = 2,
+      name = "replica",
+      cpu = 2,
+      core_fraction = 5,
+      ram = 4,
+      disk = 5
+    }
+  ]
+}
+
+resource "yandex_compute_instance" "cluster" {
+  for_each = {
+    for vm in local.vms :
+    vm.id => vm
+  }
+
+  depends_on = [yandex_compute_instance.web]
+
+  name = each.value.name
+  platform_id = "standard-v1"
+
+  resources {
+    cores  = each.value.cpu
+    memory = each.value.ram
+    core_fraction = each.value.core_fraction
+  }
+
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.base_ubuntu.image_id
+      type = "network-hdd"
+      size = each.value.disk
+    }
+  }
+
+  metadata = {
+    ssh-keys = "ubuntu:${file(var.ssh_pub_key_file)}"
+  }
+
+  scheduling_policy { preemptible = true }
+
+  network_interface {
+    subnet_id = yandex_vpc_subnet.develop.id
+    nat       = true
+    security_group_ids = [yandex_vpc_security_group.example.id]
+  }
+  allow_stopping_for_update = true
+}
+```
+
+либо можно не использовать local, а параметры ресурсов описать в var
+
+```terraform
+variable "cluster_vms" {
+  type = list(object({
+    id = number
+    name = string
+    cpu = number
+    core_fraction = number
+    ram = number
+    disk = number
+  }))
+  default = [
+    {
+      id = 1,
+      name = "main",
+      cpu = 4,
+      core_fraction = 20,
+      ram = 8,
+      disk = 10,
+    },
+    {
+      id = 2,
+      name = "replica",
+      cpu = 2,
+      core_fraction = 5,
+      ram = 4,
+      disk = 5
+    }
+  ]
+}
+
+resource "yandex_compute_instance" "cluster" {
+  for_each = {
+    for vm in var.cluster_vms :
+    vm.id => vm
+  }
+  ...
+}
+```
+
+Скрины по работе depends_on
+
+<img src="./img/8.png">
+<img src="./img/9.png">
+
 ------
 
 ### Задание 3
