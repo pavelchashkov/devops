@@ -47,7 +47,7 @@ variable "ssh_pub_key_file" {
   default = "~/.ssh/id_rsa.pub"
 }
 
-variable "cluster_vms" {
+variable "database_vms" {
   type = list(object({
     id = number
     name = string

@@ -19,9 +19,9 @@ locals {
   ]
 }
 
-resource "yandex_compute_instance" "cluster" {
+resource "yandex_compute_instance" "database" {
   for_each = {
-    for vm in var.cluster_vms :
+    for vm in var.database_vms :
     vm.id => vm
   }
 

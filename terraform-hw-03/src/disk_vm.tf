@@ -6,7 +6,8 @@ resource "yandex_compute_disk" "disks" {
 }
 
 resource "yandex_compute_instance" "storage" {
-  name = "storage"
+  count = 1
+  name = "storage-${count.index+1}"
   platform_id = "standard-v1"
 
   resources {

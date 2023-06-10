@@ -227,10 +227,51 @@ resource "yandex_compute_instance" "cluster" {
 Готовый код возьмите из демонстрации к лекции [**demonstration2**](https://github.com/netology-code/ter-homeworks/tree/main/demonstration2).
 Передайте в него в качестве переменных группы виртуальных машин из задания 2.1, 2.2 и 3.2.(т.е. 5 ВМ)
 2. Инвентарь должен содержать 3 группы [webservers], [databases], [storage] и быть динамическим, т.е. обработать как группу из 2-х ВМ так и 999 ВМ.
-4. Выполните код. Приложите скриншот получившегося файла. 
+3. Выполните код. Приложите скриншот получившегося файла. 
 
 Для общего зачета создайте в вашем GitHub репозитории новую ветку terraform-03. Закомитьте в эту ветку свой финальный код проекта, пришлите ссылку на коммит.   
 **Удалите все созданные ресурсы**.
+
+### Решение
+
+```terraform
+resource "local_file" "hosts_cfg" {
+  depends_on = [yandex_compute_instance.web, yandex_compute_instance.database, yandex_compute_instance.storage]
+  content = templatefile(
+    "${path.module}/hosts.tftpl",
+    {
+      webservers = yandex_compute_instance.web,
+      databases  = yandex_compute_instance.database,
+      storage    = yandex_compute_instance.storage
+    }
+  )
+  filename = "${abspath(path.module)}/hosts.cfg"
+}
+```
+
+```terraform
+[webservers]
+%{~ for i in webservers ~}
+
+${i["name"]}   ansible_host=${i["network_interface"][0]["nat_ip_address"]}
+%{~ endfor ~}
+
+
+[databases]
+%{~ for i in databases ~}
+
+${i["name"]}   ansible_host=${i["network_interface"][0]["nat_ip_address"]}
+%{~ endfor ~}
+
+
+[storage]
+%{~ for i in storage ~}
+
+${i["name"]}   ansible_host=${i["network_interface"][0]["nat_ip_address"]}
+%{~ endfor ~}
+```
+
+<img src="./img/12.png">
 
 ------
 

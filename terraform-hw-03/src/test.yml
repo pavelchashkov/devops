@@ -1,0 +1,17 @@
+---
+
+- name: test
+  become: true
+  become_user: root
+  hosts: all
+  vars:
+    ansible_user: ubuntu
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        force_apt_get: yes
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
