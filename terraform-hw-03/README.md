@@ -299,6 +299,28 @@ ${i["name"]}   ansible_host=${i["network_interface"][0]["nat_ip_address"]}
 ```
 Приложите скриншот вывода команды ```terrafrom output```
 
+### Решение
+
+```terraform
+locals {
+  all_mv_groups = [yandex_compute_instance.storage, yandex_compute_instance.web, yandex_compute_instance.database]
+}
+
+output "all_vms" {
+  value = flatten([
+    for gr in local.all_mv_groups: [
+      for vm in gr: {
+        name = vm.name,
+        id = vm.id,
+        fqdn = vm.fqdn
+      }
+    ]
+  ])
+}
+```
+
+<img src="./img/13.png">
+
 ------
 
 ### Задание 6*(необязательное)
