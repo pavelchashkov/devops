@@ -137,6 +137,19 @@ output "subnet_id" {
 3. Импортируйте его обратно. Проверьте terraform plan - изменений быть не должно.
 Приложите список выполненных команд и вывод.
 
+```shell
+terraform state list
+terraform state rm module.vpc_dev
+terraform import module.vpc_dev.yandex_vpc_network.by_name enpjqbcediflvs36hlrn
+terraform import module.vpc_dev.yandex_vpc_subnet.by_name e9baqr3fv5l6jbk3b56k
+terraform plan
+```
+
+<img src="./img/3.png">
+<img src="./img/4.png">
+<img src="./img/5.png">
+<img src="./img/6.png">
+
 ## Дополнительные задания (со звездочкой*)
 
 **Настоятельно рекомендуем выполнять все задания под звёздочкой.**   Их выполнение поможет глубже разобраться в материале.   
