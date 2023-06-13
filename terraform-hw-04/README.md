@@ -79,6 +79,58 @@ module "vpc_dev" {
 }
 ```
 
+### Решение
+
+```terraform
+variable "vpc_name" {
+  type = string
+  description = "vpc name"
+}
+
+variable "vpc_zone" {
+  type = string
+  description = "vpc zone"
+}
+
+variable "vpc_v4_cidr_blocks" {
+  type = list(string)
+  description = "vpc v4_cidr_blocks"
+}
+```
+
+```terraform
+terraform {
+  required_providers {
+    yandex = {
+      source = "yandex-cloud/yandex"
+    }
+  }
+}
+
+resource "yandex_vpc_network" "by_name" {
+  name = var.vpc_name
+}
+
+resource "yandex_vpc_subnet" "by_name" {
+  name           = "${var.vpc_name}-${var.vpc_zone}"
+  zone           = var.vpc_zone
+  network_id     = yandex_vpc_network.by_name.id
+  v4_cidr_blocks = var.vpc_v4_cidr_blocks
+}
+```
+
+```terraform
+output "vpc_id" {
+  value = yandex_vpc_network.by_name.id
+}
+
+output "subnet_id" {
+  value = yandex_vpc_subnet.by_name.id
+}
+```
+
+<img src="./img/2.png">
+
 ### Задание 3
 1. Выведите список ресурсов в стейте.
 2. Удалите из стейта модуль vpc.
