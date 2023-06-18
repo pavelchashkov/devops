@@ -1,0 +1,2 @@
+terraform init -backend-config="access_key=<s3_access_key>" -backend-config="secret_key=<s3_secret_key>"
+terraform init -backend-config="access_key=<s3_access_key>" -backend-config="secret_key=<s3_secret_key>" -reconfigure

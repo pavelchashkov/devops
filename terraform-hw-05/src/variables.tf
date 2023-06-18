@@ -37,6 +37,6 @@ variable "public_key" {
 }
 
 variable "ssh_pub_key_file" {
-  type = string
+  type    = string
   default = "~/.ssh/id_rsa.pub"
 }
