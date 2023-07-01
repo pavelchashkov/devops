@@ -1,0 +1,8 @@
+---
+clickhouse:
+  hosts:
+    clickhouse-01:
+      ansible_host: 84.201.160.78
+      ansible_ssh_user: gepox
+#      ansible_ssh_pass: pass
+#      ansible_become_pass: pass
