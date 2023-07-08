@@ -1,0 +1,24 @@
+---
+clickhouse:
+  hosts:
+    clickhouse-01:
+      ansible_host: 84.252.136.255
+#      ansible_ssh_user: pavel
+#      ansible_ssh_pass: pass
+#      ansible_become_pass: pass
+
+lighthouse:
+  hosts:
+    lighthouse-01:
+      ansible_host: 158.160.9.105
+#      ansible_ssh_user: pavel
+#      ansible_ssh_pass: pass
+#      ansible_become_pass: pass
+
+vector:
+  hosts:
+    vector-01:
+      ansible_host: 158.160.7.136
+#      ansible_ssh_user: pavel
+#      ansible_ssh_pass: pass
+#      ansible_become_pass: pass

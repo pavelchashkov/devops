@@ -1,0 +1,168 @@
+---
+# Install/Configure Nginx
+- name: Install Nginx
+  tags:
+    - nginx
+  hosts: lighthouse
+  handlers:
+    - name: start-nginx
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      ignore_errors: "{{ ansible_check_mode }}"
+  tasks:
+    - name: Nginx | Install dependencies
+      become: true
+      ansible.builtin.yum:
+        name: epel-release
+        state: present
+    - name: Nginx | Install nginx
+      become: true
+      ansible.builtin.yum:
+        name: nginx
+        state: latest
+      ignore_errors: "{{ ansible_check_mode }}"
+      notify: start-nginx
+    - name: Nginx | Template config
+      become: true
+      ansible.builtin.template:
+        src: "templates/nginx.conf.j2"
+        dest: "/etc/nginx/nginx.conf"
+        mode: "755"
+      notify: start-nginx
+
+# Install/Configure LightHouse
+- name: Install LightHouse
+  tags:
+    - lighthouse
+  hosts: lighthouse
+  handlers:
+    - name: reload-nginx
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+      ignore_errors: "{{ ansible_check_mode }}"
+  pre_tasks:
+    - name: LightHouse | Install dependencies
+      become: true
+      ansible.builtin.yum:
+        name: git
+        state: latest
+  tasks:
+    - name: LightHouse | Copy from git
+      become: true
+      git:
+        repo: "{{ lighthouse_git_repo }}"
+        version: master
+        dest: "{{ lighthouse_location_dir }}"
+      ignore_errors: "{{ ansible_check_mode }}"
+    - name: LightHouse | Create config
+      become: true
+      ansible.builtin.template:
+        src: "templates/lighthouse.conf.j2"
+        dest: "/etc/nginx/conf.d/lighthouse.conf"
+        mode: "755"
+      notify: reload-nginx
+
+# Install/Configure ClickHouse
+- name: Install ClickHouse
+  tags:
+    - clickhouse
+  hosts: clickhouse
+  handlers:
+    - name: start-clickhouse
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+  tasks:
+    - name: ClickHouse | Download rpm
+      block:
+        - name: ClickHouse | Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
+            dest: "./{{ item }}-{{ clickhouse_version }}.rpm"
+          with_items: "{{ clickhouse_packages }}"
+      rescue:
+        - name: ClickHouse | Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+    - name: ClickHouse | Install packages
+      become: true
+      vars:
+        ansible_become_timeout: 15
+      ansible.builtin.yum:
+        name:
+          - clickhouse-common-static-{{ clickhouse_version }}.rpm
+          - clickhouse-client-{{ clickhouse_version }}.rpm
+          - clickhouse-server-{{ clickhouse_version }}.rpm
+      notify: start-clickhouse
+      ignore_errors: "{{ ansible_check_mode }}"
+    - name: ClickHouse | Flush handlers
+      meta: flush_handlers
+    - name: ClickHouse | Create database
+      ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc !=82
+      changed_when: create_db.rc == 0
+      ignore_errors: "{{ ansible_check_mode }}"
+    - name: Clickhouse | Create table
+      ansible.builtin.command: "clickhouse-client -q 'CREATE TABLE IF NOT EXISTS logs.data_logs (message String) ENGINE = MergeTree() ORDER BY tuple();'"
+      register: create_table
+      failed_when: create_table.rc != 0 and create_table.rc !=82
+      changed_when: create_table.rc == 0
+      ignore_errors: "{{ ansible_check_mode }}"
+
+# Install/Configure Vector
+- name: Install Vector
+  tags:
+    - vector
+  hosts: vector
+  handlers:
+    - name: start-vector
+      become: true
+      ansible.builtin.service:
+        name: vector
+        state: started
+        daemon_reload: true
+      ignore_errors: "{{ ansible_check_mode }}"
+  tasks:
+    - name: Vector | Download rpm
+      ansible.builtin.get_url:
+        url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-1.x86_64.rpm"
+        dest: "./vector-{{ vector_version }}-1.x86_64.rpm"
+        mode: "0644"
+        timeout: 200
+    - name: Vector | Install package
+      become: true
+      become_method: sudo
+      ansible.builtin.yum:
+        disable_gpg_check: true
+        name: "./vector-{{ vector_version }}-1.x86_64.rpm"
+      ignore_errors: "{{ ansible_check_mode }}"
+    - name: Vector | Create data dir
+      become: true
+      ansible.builtin.file:
+        mode: "755"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        path: "{{ vector_config_dir }}"
+        state: "directory"
+    - name: Vector | Template config
+      ansible.builtin.template:
+        src: "templates/vector.config.j2"
+        dest: "{{ vector_config_dir }}/vector.yaml"
+        mode: "755"
+    - name: Vector | Register service
+      become: true
+      ansible.builtin.template:
+        src: "templates/vector.service.j2"
+        dest: "/etc/systemd/system/vector.service"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_gid }}"
+        mode: "0644"
+        backup: true
+      notify: start-vector

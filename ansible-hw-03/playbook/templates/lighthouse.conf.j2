@@ -1,0 +1,10 @@
+server {
+    listen 80;
+
+    access_log /var/log/nginx/lighthouse_access.log;
+
+    location / {
+        root {{ lighthouse_location_dir }};
+        index index.html;
+    }
+}

@@ -1,0 +1,20 @@
+---
+vector_version: "0.21.0"
+vector_config_dir: /var/lib/vector
+vector_config:
+  data_dir: /var/lib/vector
+  sources:
+    demo_logs:
+      type: demo_logs
+      format: syslog
+  sinks:
+    to_clickhouse:
+      type: clickhouse
+      inputs:
+        - demo_logs
+      database: logs
+      endpoint: http://84.252.136.255:8123
+      table: data_logs
+      compression: gzip
+      healthcheck: true
+      skip_unknown_fields: true
