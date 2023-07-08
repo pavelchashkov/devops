@@ -29,7 +29,7 @@
 ## Решение
 
 <details>
-  <summary>Листинг выполненения playbook</summary>
+  <summary>Листинг выполнения playbook</summary>
 
 ```shell
 pavel@pavel-HN-WX9X:~/projects/devops/ansible-hw-03$ ansible-playbook -i playbook/inventory/prod.yml playbook/playbook.yml --diff
