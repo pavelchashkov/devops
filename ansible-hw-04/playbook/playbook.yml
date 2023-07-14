@@ -1,0 +1,31 @@
+---
+# Install/Configure LightHouse
+- name: Install LightHouse
+  hosts: lighthouse
+  tags:
+    - lighthouse
+  roles:
+    - lighthouse
+
+# Install/Configure ClickHouse
+- name: Install ClickHouse
+  hosts: clickhouse
+  tags:
+    - clickhouse
+  roles:
+    - clickhouse
+  post_tasks:
+    - name: Clickhouse | Create table
+      ansible.builtin.command: "clickhouse-client -q 'CREATE TABLE IF NOT EXISTS logs.data_logs (message String) ENGINE = MergeTree() ORDER BY tuple();'"
+      register: create_table
+      failed_when: create_table.rc != 0 and create_table.rc !=82
+      changed_when: create_table.rc == 0
+      ignore_errors: "{{ ansible_check_mode }}"
+
+# Install/Configure Vector
+- name: Install Vector
+  hosts: vector
+  tags:
+    - vector
+  roles:
+    - vector

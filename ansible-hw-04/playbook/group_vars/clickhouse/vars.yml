@@ -1,0 +1,16 @@
+clickhouse_dbs_custom:
+  - { "name": logs }
+clickhouse_listen_host_default:
+  - "::1"
+  - "0.0.0.0"
+
+vector_networks:
+  - "{{ vector_host }}"
+clickhouse_users_custom:
+  - { name: "vector",
+      password: "password",
+      networks: "{{ vector_networks }}",
+      profile: "default",
+      quota: "default",
+      dbs: [ logs ] ,
+      comment: "vector user" }
