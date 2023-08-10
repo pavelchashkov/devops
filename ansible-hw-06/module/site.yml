@@ -1,0 +1,8 @@
+---
+- name: Test my_own_module
+  hosts: localhost
+  tasks:
+    - name: Call my_own_module
+      my_own_module:
+        path: /tmp/test_from_site.txt
+        content: test_from_site
