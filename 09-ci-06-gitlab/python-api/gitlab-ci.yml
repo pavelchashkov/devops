@@ -1,0 +1,29 @@
+stages:
+  - build
+  - deploy
+
+image: docker:20.10.5
+services:
+  - docker:20.10.5-dind
+
+job-build:
+  stage: build
+  script:
+    - docker build -t python-api-$CI_COMMIT_SHORT_SHA:latest .
+  tags:
+    - netology
+  except:
+    - main
+
+job-deploy:
+  stage: deploy
+  script:
+    - docker build -t $CI_REGISTRY/netology/python-api/python-api:latest .
+    - docker tag $CI_REGISTRY/netology/python-api/python-api:latest $CI_REGISTRY/netology/python-api/python-api-$CI_COMMIT_SHORT_SHA:latest
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY/netology/python-api/python-api:latest
+    - docker push $CI_REGISTRY/netology/python-api/python-api-$CI_COMMIT_SHORT_SHA:latest
+  tags:
+    - netology
+  only:
+    - main
