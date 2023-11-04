@@ -4,3 +4,4 @@
 /05-virt-04-docker-compose/terraform/.terraform.lock.hcl
 /09-ci-03-cicd/example/.scannerwork/.sonar_lock
 /09-ci-03-cicd/example/.scannerwork/report-task.txt
+venv
