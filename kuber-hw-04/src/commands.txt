@@ -1,0 +1,28 @@
+kubectl apply -n netology -f deployment1.yaml
+kubectl get pods -n netology
+kubectl apply -n netology -f service1.yaml
+kubectl get services -n netology
+kubectl get endpoints -n netology
+kubectl get pods -o wide -n netology
+
+kubectl run mycurlpod --image=praqma/network-multitool -i --tty --rm -- sh
+
+kubectl get pods -o wide -n netology
+
+curl 10.1.243.225:80
+curl 10.1.243.225:8080
+curl 10.1.243.226:80
+curl 10.1.243.226:8080
+curl 10.1.243.228:80
+curl 10.1.243.228:8080
+
+curl nginx # -> no_port
+curl nginx:9001
+curl nginx:9002
+
+kubectl apply -n netology -f service2.yaml
+
+kubectl get services -n netology
+
+curl ubuntu.local:30898
+curl ubuntu.local:32424
