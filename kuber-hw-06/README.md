@@ -36,7 +36,7 @@
 
 ### Решение
 
-* [deploy_front.yaml](./src/deployment.yaml)
+* [deployment.yaml](./src/deployment.yaml)
 
 ```shell
 kubectl -n netology apply -f kuber-hw-06/src/deployment.yaml
@@ -61,6 +61,19 @@ kubectl -n netology logs myapp-6d85d59f84-jzg92 -c multitool
 2. Обеспечить возможность чтения файла `/var/log/syslog` кластера MicroK8S.
 3. Продемонстрировать возможность чтения файла изнутри пода.
 4. Предоставить манифесты Deployment, а также скриншоты или вывод команды из п. 2.
+
+### Решение
+
+* [daemonset.yaml](./src/daemonset.yaml)
+
+```shell
+kubectl -n netology apply -f kuber-hw-06/src/daemonset.yaml
+kubectl -n netology get pods 
+kubectl -n netology exec -it multitool-vx466 -- sh
+tail -n10 /log/syslog
+```
+
+<img src="./img/3.png">
 
 ------
 
