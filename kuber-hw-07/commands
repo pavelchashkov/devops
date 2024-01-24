@@ -1,0 +1,85 @@
+sudo mkdir /mnt/data
+ls -la /mnt/data/
+kubectl apply -f src/1_pv.yaml
+kubectl get pv pv-volume
+kubectl apply -f src/1_pvc.yaml
+kubectl get pvc pv-claim
+kubectl apply -f src/1_deployment.yaml
+kubectl get pods
+kubectl logs myapp-85cc44b9c6-9c6c8 -c busybox
+kubectl logs myapp-85cc44b9c6-9c6c8 -c multitool
+ls -la /mnt/data/
+cat /mnt/data/logs/myapp.txt
+
+kubectl delete -f src/1_deployment.yaml
+kubectl delete -f src/1_pvc.yaml
+kubectl get pods
+kubectl get pvc
+ls -la /mnt/data/logs/
+cat /mnt/data/logs/myapp.txt
+
+kubectl delete -f src/1_pvc.yaml
+kubectl get pv
+ls -la /mnt/data/logs/
+cat /mnt/data/logs/myapp.txt
+
+
+
+
+
+
+helm repo add stable https://charts.helm.sh/stable
+help repo update
+helm install nfs-server stable/nfs-server-provisioner
+kubectl get storageclass
+kubectl describe sc nfs
+
+sudo apt install nfs-common
+
+kubectl get pods
+kubectl describe pod nfs-server-nfs-server-provisioner-0
+
+kubectl get pv
+kubectl get pvc
+
+
+
+https://microk8s.io/docs/how-to-nfs
+
+sudo apt-get install nfs-kernel-server
+
+sudo mkdir -p /srv/nfs
+sudo chown nobody:nogroup /srv/nfs
+sudo chmod 0777 /srv/nfs
+
+sudo mv /etc/exports /etc/exports.bak
+echo '/srv/nfs 192.168.115.128/24(rw,sync,no_subtree_check)' | sudo tee /etc/exports
+
+sudo systemctl restart nfs-kernel-server
+
+microk8s enable helm3
+microk8s helm3 repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+microk8s helm3 repo update
+
+microk8s helm3 install csi-driver-nfs csi-driver-nfs/csi-driver-nfs \
+    --namespace kube-system \
+    --set kubeletDir=/var/snap/microk8s/common/var/lib/kubelet
+
+microk8s kubectl wait pod --selector app.kubernetes.io/name=csi-driver-nfs --for condition=ready --namespace kube-system
+
+microk8s kubectl get csidrivers
+
+microk8s kubectl get pod -n kube-system
+
+kubectl apply -f src/2_sc.yaml
+kubectl get sc
+kubectl apply -f src/2_pvc.yaml
+kubectl get pvc
+kubectl get pv
+
+kubectl apply -f src/2_deployment.yaml
+
+kubectl exec -it myapp-588f74544c-pkcf2 -- sh
+date > /static/test.txt
+
+cat /srv/nfs/pvc-fae45915-e8fe-42de-a4a2-9e89b5346b55/test.txt
