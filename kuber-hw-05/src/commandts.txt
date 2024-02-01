@@ -3,10 +3,10 @@ kubectl apply -n netology -f src/deploy_back.yaml
 kubectl apply -n netology -f src/service_front.yaml
 kubectl apply -n netology -f src/service_back.yaml
 
-kuber-hw-05 % kubectl get pods -n netology -o wide
-kuber-hw-05 % kubectl get services -n netology
+kubectl get pods -n netology -o wide
+kubectl get services -n netology
 
-kuber-hw-05 % kubectl run -n netology mycurlpod --image=praqma/network-multitool -i --tty --rm -- sh
+kubectl run -n netology mycurlpod --image=praqma/network-multitool -i --tty --rm -- sh
 curl app-frontend
 curl app-backend
 
