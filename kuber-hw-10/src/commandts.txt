@@ -1,0 +1,13 @@
+helm create helm-chart
+
+helm upgrade --install --atomic nginx-1-app1 helm-chart/ --namespace app1
+kubectl get pod -n app1
+helm -n app1 list
+
+helm upgrade --install --atomic nginx-2-app1 helm-chart/ --namespace app1 --set image.tag=1.22.0
+kubectl get pod -n app1
+helm -n app1 list
+
+helm upgrade --install --atomic nginx-1-app2 helm-chart/ --namespace app2 -f values.app2.yaml
+kubectl get pod -n app2
+helm -n app2 list
