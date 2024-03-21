@@ -1,0 +1,13 @@
+yc iam create-token
+
+ssh-keygen -t ed25519
+
+terraform init
+terraform plan
+terraform apply
+
+ssh -i <SSH_KEY_PATH> <VM>
+
+ssh -i ~/.ssh/ya_id_ed25519 158.160.133.33
+scp -i ~/.ssh/ya_id_ed25519 ~/.ssh/ya_id_ed25519 158.160.133.33:~/.ssh/ya_id_ed25519
+ssh -i ~/.ssh/ya_id_ed25519 192.168.20.25
