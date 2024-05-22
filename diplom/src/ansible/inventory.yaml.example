@@ -1,0 +1,17 @@
+master:
+  hosts:
+    master-node:
+      ansible_host: <IP>
+      ansible_user: <user>
+workers:
+  hosts:
+    worker-node-1:
+      ansible_host: <IP>
+      ansible_user: <user>
+    worker-node-2:
+      ansible_host: <IP>
+      ansible_user: <user>
+all:
+  children:
+    master:
+    workers:

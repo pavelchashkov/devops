@@ -1,3 +1,5 @@
 token        = ""
 cloud_id     = ""
 folder_id    = ""
+ssh_user     = ""
+ssh_key_path = ""

@@ -22,17 +22,15 @@ variable "default_subnet_zone" {
 
 variable "subnet_zones" {
   type        = list(string)
-  default     = ["ru-central1-a", "ru-central1-b", "ru-central1-c", "ru-central1-d"]
+  default     = ["ru-central1-a", "ru-central1-b", "ru-central1-d"] # ru-central1-d выводится из эксплуатации
   description = "subnet zones (https://cloud.yandex.ru/docs/overview/concepts/geo-scope)"
 }
 
 variable "zone_cidrs" {
   type        = list(string)
-  default     = ["10.10.1.0/24", "10.10.2.0/24", "10.10.3.0/24", "10.10.4.0/24"]
+  default     = ["10.10.1.0/24", "10.10.2.0/24", "10.10.3.0/24"]
   description = "zone cirds (https://cloud.yandex.ru/docs/overview/concepts/geo-scope)"
 }
-
-
 
 variable "service_account_name" {
   type        = string
@@ -44,4 +42,14 @@ variable "vpc_name" {
   type        = string
   default     = "diplom-vpc-dev"
   description = "vpc name"
+}
+
+variable "ssh_user" {
+  type        = string
+  description = "ssh user"
+}
+
+variable "ssh_key_path" {
+  type        = string
+  description = "ssh key path"
 }

@@ -1,0 +1,16 @@
+master:
+  hosts:
+    master-node:
+      ansible_host: ${nodes_public_ips[0]}
+      ansible_user: chashkov.ps
+workers:
+  hosts:
+%{ for index, ip in slice(nodes_public_ips, 1, 3) }
+    worker-node-${index+1}:
+      ansible_host: ${ip}
+      ansible_user: ${user}
+%{ endfor }
+all:
+  children:
+    master:
+    workers:

@@ -5,3 +5,5 @@ terraform.tfstate
 terraform.tfstate.*
 
 personal.auto.tfvars
+
+inventory.yaml
