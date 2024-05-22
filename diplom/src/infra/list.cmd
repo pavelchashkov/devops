@@ -32,7 +32,17 @@ kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/master/m
 
 ssh -i ~/.ssh/ya_id_ed25519 <IP2>
 # SUDO
-kubeadm join 10.10.1.12:6443 --token 7jcnbj.7m0m4b3zpx131uem --discovery-token-ca-cert-hash sha256:588a662b9095c5ae8837d254de6381499179c6240e3c0b49a67f4a76ed3385ae
+kubeadm join 10.10.1.12:6443 --token 7jcnbj.7m0m4b3zpx131uem --discovery-token-ca-cert-hash sha256...
 ssh -i ~/.ssh/ya_id_ed25519 <IP3>
 # SUDO
-kubeadm join 10.10.1.12:6443 --token 7jcnbj.7m0m4b3zpx131uem --discovery-token-ca-cert-hash sha256:588a662b9095c5ae8837d254de6381499179c6240e3c0b49a67f4a76ed3385ae
+kubeadm join 10.10.1.12:6443 --token 7jcnbj.7m0m4b3zpx131uem --discovery-token-ca-cert-hash sha256...
+
+# ------------
+
+docker build -t my-app .
+docker image tag my-app pavelchashkov/netology-devops-app:0.1.0
+docker image tag my-app pavelchashkov/netology-devops-app:latest
+docker push pavelchashkov/netology-devops-app --all-tags
+
+https://gitlab.com/pavelchashkov/netology-devops-app
+https://hub.docker.com/repository/docker/pavelchashkov/netology-devops-app/tags
