@@ -10,6 +10,7 @@
       - kubelet
       - kubeadm
       - kubectl
+      - git
 
   tasks:
     - name: Turn off swap
@@ -97,6 +98,8 @@
       ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
+      tags:
+        - packages
 
     - name: Enable kubelet
       become: true

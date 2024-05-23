@@ -46,3 +46,28 @@ docker push pavelchashkov/netology-devops-app --all-tags
 
 https://gitlab.com/pavelchashkov/netology-devops-app
 https://hub.docker.com/repository/docker/pavelchashkov/netology-devops-app/tags
+
+# ------------
+
+git submodule add git@gitlab.com:pavelchashkov/netology-devops-app.git
+git commit -m "Added the submodule netology-devops-app"
+
+# add git to packages
+ansible-playbook -i inventory.yaml --key-file ~/.ssh/ya_id_ed25519 playbook_k8s_distr.yaml --tags "packages"
+
+kubectl apply --server-side -f kube-prometheus/manifests/setup
+kubectl wait --for condition=Established --all CustomResourceDefinition --namespace=monitoring
+kubectl apply -f kube-prometheus/manifests/
+
+kubectl -n monitoring delete networkpolicies.networking.k8s.io --all # сетевые политики, которые запрещают доступ
+kubectl --namespace monitoring patch svc grafana -p '{"spec": {"type": "NodePort"}}'
+
+# netology-devops-app
+docker build -t pavelchashkov/netology-devops-app:0.1.1 --platform=linux/amd64 .
+docker image tag pavelchashkov/netology-devops-app:0.1.1 pavelchashkov/netology-devops-app:latest
+docker push pavelchashkov/netology-devops-app --all-tags
+
+kubectl create namespace netology
+kubectl get pods -n netology
+kubectl apply -f app-deployment.yml
+kubectl get pods -n netology
