@@ -107,3 +107,9 @@
         name: kubelet
         state: started
         enabled: true
+
+    - name: Install helm
+      tags:
+        - helm
+      shell: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash

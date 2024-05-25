@@ -71,3 +71,26 @@ kubectl create namespace netology
 kubectl get pods -n netology
 kubectl apply -f app-deployment.yml
 kubectl get pods -n netology
+
+# ------------
+
+ansible-playbook -i inventory.yaml --key-file ~/.ssh/ya_id_ed25519 playbook_k8s_distr.yaml --tags "helm"
+
+https://docs.gitlab.com/runner/install/kubernetes.html
+
+# VM with kubectl
+helm repo add gitlab https://charts.gitlab.io
+helm show values gitlab/gitlab-runner > gitlab-runner.yml
+nano gitlab-runner.yml
+
+# - gitlab-runner.yml
+gitlabUrl: https://gitlab.com/
+runnerToken: "***************"
+clusterWideAccess: true
+# -
+
+kubectl create namespace gitlab-runner
+helm install --namespace gitlab-runner gitlab-runner -f gitlab-runner.yml gitlab/gitlab-runner
+
+# don`t use this method on the prod server (use RBAC)
+kubectl create clusterrolebinding --clusterrole=cluster-admin -n gitlab-runner --serviceaccount=gitlab-runner:default gitlab-runner
