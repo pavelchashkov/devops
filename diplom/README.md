@@ -50,6 +50,44 @@
 1. Terraform сконфигурирован и создание инфраструктуры посредством Terraform возможно без дополнительных ручных действий.
 2. Полученная конфигурация инфраструктуры является предварительной, поэтому в ходе дальнейшего выполнения задания возможны изменения.
 
+### Решение
+
+[src/infra](./src/infra)
+
+```shell
+yc components update
+yc iam create-token
+terraform init
+
+terraform plan
+terraform apply
+terraform destroy
+```
+
+<img src="./img/1.1.png">
+
+<img src="./img/1.2.png">
+
+<img src="./img/1.3.png">
+
+<img src="./img/1.4.png">
+
+<img src="./img/1.5.png">
+
+<img src="./img/1.6.png">
+
+<img src="./img/1.7.png">
+
+<img src="./img/1.8.png">
+
+<img src="./img/1.9.png">
+
+<img src="./img/1.10.png">
+
+<img src="./img/1.11.png">
+
+<img src="./img/1.12.png">
+
 ---
 ### Создание Kubernetes кластера
 
@@ -71,6 +109,66 @@
 2. В файле `~/.kube/config` находятся данные для доступа к кластеру.
 3. Команда `kubectl get pods --all-namespaces` отрабатывает без ошибок.
 
+### Решение
+
+[src/ansible](./src/insible)
+
+```shell
+ssh -i ~/.ssh/ya_id_ed25519 <IP_MASTER>
+ssh -i ~/.ssh/ya_id_ed25519 <IP_WORKER_1>
+ssh -i ~/.ssh/ya_id_ed25519 <IP_WORKER_2>
+
+cp inventory.yaml ../ansible/inventory.yaml
+ansible-playbook -i inventory.yaml --key-file ~/.ssh/ya_id_ed25519 playbook_k8s_distr.yaml
+
+ssh -i ~/.ssh/ya_id_ed25519 <IP_MASTER>
+# SUDO
+kubeadm init
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+# USER
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# SUDO
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/master/manifests/calico.yaml
+
+ssh -i ~/.ssh/ya_id_ed25519 <IP_WORKER_1>
+# SUDO
+kubeadm join 10.10.1.12:6443 --token 7jcnbj.7m0m4b3zpx131uem --discovery-token-ca-cert-hash sha256...
+
+ssh -i ~/.ssh/ya_id_ed25519 <IP_WORKER_2>
+# SUDO
+kubeadm join 10.10.1.12:6443 --token 7jcnbj.7m0m4b3zpx131uem --discovery-token-ca-cert-hash sha256...
+```
+
+<img src="./img/2.1.png">
+
+<img src="./img/2.2.png">
+
+<img src="./img/2.3.png">
+
+<img src="./img/2.4.png">
+
+<img src="./img/2.5.png">
+
+<img src="./img/2.6.png">
+
+<img src="./img/2.7.png">
+
+<img src="./img/2.8.png">
+
+<img src="./img/2.9.png">
+
+<img src="./img/2.10.png">
+
+<img src="./img/2.11.png">
+
+<img src="./img/2.12.png">
+
+<img src="./img/2.13.png">
+
 ---
 ### Создание тестового приложения
 
@@ -88,6 +186,31 @@
 
 1. Git репозиторий с тестовым приложением и Dockerfile.
 2. Регистри с собранным docker image. В качестве регистри может быть DockerHub или [Yandex Container Registry](https://cloud.yandex.ru/services/container-registry), созданный также с помощью terraform.
+
+### Решение
+
+[netology-devops-app](https://gitlab.com/pavelchashkov/netology-devops-app) (submodule in current git repo)
+https://hub.docker.com/repository/docker/pavelchashkov/netology-devops-app/tags
+
+```shell
+docker build -t my-app .
+docker image tag my-app pavelchashkov/netology-devops-app:0.1.0
+docker image tag my-app pavelchashkov/netology-devops-app:latest
+docker push pavelchashkov/netology-devops-app --all-tags
+
+git submodule add git@gitlab.com:pavelchashkov/netology-devops-app.git
+git commit -m "Added the submodule netology-devops-app"
+```
+
+<img src="./img/3.1.png">
+
+<img src="./img/3.2.png">
+
+<img src="./img/3.3.png">
+
+<img src="./img/3.4.png">
+
+<img src="./img/3.5.png">
 
 ---
 ### Подготовка cистемы мониторинга и деплой приложения
@@ -110,6 +233,63 @@
 3. Дашборды в grafana отображающие состояние Kubernetes кластера.
 4. Http доступ к тестовому приложению.
 
+### Решение
+
+```shell
+# add git to packages
+ansible-playbook -i inventory.yaml --key-file ~/.ssh/ya_id_ed25519 playbook_k8s_distr.yaml --tags "packages"
+
+kubectl apply --server-side -f kube-prometheus/manifests/setup
+kubectl wait --for condition=Established --all CustomResourceDefinition --namespace=monitoring
+kubectl apply -f kube-prometheus/manifests/
+
+kubectl -n monitoring delete networkpolicies.networking.k8s.io --all # сетевые политики, которые запрещают доступ
+kubectl --namespace monitoring patch svc grafana -p '{"spec": {"type": "NodePort"}}'
+
+# netology-devops-app
+docker build -t pavelchashkov/netology-devops-app:0.1.1 --platform=linux/amd64 .
+docker image tag pavelchashkov/netology-devops-app:0.1.1 pavelchashkov/netology-devops-app:latest
+docker push pavelchashkov/netology-devops-app --all-tags
+
+kubectl create namespace netology
+kubectl get pods -n netology
+kubectl apply -f app-deployment.yml
+kubectl get pods -n netology
+```
+
+```
+http://158.160.104.51:30435
+hinma8-daVxiw-kapgyc
+
+http://158.160.104.51:30080
+```
+
+<img src="./img/4.1.png">
+
+<img src="./img/4.2.png">
+
+<img src="./img/4.3.png">
+
+<img src="./img/4.4.png">
+
+<img src="./img/4.5.png">
+
+<img src="./img/4.6.png">
+
+<img src="./img/4.7.png">
+
+<img src="./img/4.8.png">
+
+<img src="./img/4.9.png">
+
+<img src="./img/4.10.png">
+
+<img src="./img/4.11.png">
+
+<img src="./img/4.12.png">
+
+<img src="./img/4.13.png">
+
 ---
 ### Установка и настройка CI/CD
 
@@ -127,6 +307,77 @@
 1. Интерфейс ci/cd сервиса доступен по http.
 2. При любом коммите в репозиторие с тестовым приложением происходит сборка и отправка в регистр Docker образа.
 3. При создании тега (например, v1.0.0) происходит сборка и отправка с соответствующим label в регистри, а также деплой соответствующего Docker образа в кластер Kubernetes.
+
+### Решение
+
+```shell
+ansible-playbook -i inventory.yaml --key-file ~/.ssh/ya_id_ed25519 playbook_k8s_distr.yaml --tags "helm"
+
+https://docs.gitlab.com/runner/install/kubernetes.html
+
+# VM with kubectl
+helm repo add gitlab https://charts.gitlab.io
+helm show values gitlab/gitlab-runner > gitlab-runner.yml
+nano gitlab-runner.yml
+
+# - gitlab-runner.yml
+gitlabUrl: https://gitlab.com/
+runnerToken: "***************"
+clusterWideAccess: true
+# -
+
+kubectl create namespace gitlab-runner
+helm install --namespace gitlab-runner gitlab-runner -f gitlab-runner.yml gitlab/gitlab-runner
+
+# don`t use this method on the prod server (use RBAC)
+kubectl create clusterrolebinding --clusterrole=cluster-admin -n gitlab-runner --serviceaccount=gitlab-runner:default gitlab-runner
+```
+
+<img src="./img/5.1.png">
+
+<img src="./img/5.2.png">
+
+<img src="./img/5.3.png">
+
+<img src="./img/5.4.png">
+
+<img src="./img/5.5.png">
+
+<img src="./img/5.6.png">
+
+<img src="./img/5.7.png">
+
+<img src="./img/5.8.png">
+
+<img src="./img/5.9.png">
+
+<img src="./img/5.10.png">
+
+<img src="./img/5.11.png">
+
+<img src="./img/5.12.png">
+
+<img src="./img/5.13.png">
+
+<img src="./img/5.14.png">
+
+<img src="./img/5.15.png">
+
+<img src="./img/5.16.png">
+
+<img src="./img/5.17.png">
+
+<img src="./img/5.18.png">
+
+<img src="./img/5.19.png">
+
+<img src="./img/5.20.png">
+
+<img src="./img/5.21.png">
+
+<img src="./img/5.22.png">
+
+<img src="./img/5.23.png">
 
 ---
 ## Что необходимо для сдачи задания?
