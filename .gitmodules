@@ -1,0 +1,3 @@
+[submodule "diplom/src/netology-devops-app"]
+	path = diplom/src/netology-devops-app
+	url = git@gitlab.com:pavelchashkov/netology-devops-app.git
